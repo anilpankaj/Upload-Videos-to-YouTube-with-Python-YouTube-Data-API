@@ -55,11 +55,14 @@ Replace `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET` with the values from your Goog
 
 ---
 
-### Step 4: Write the Python Script
+### Step 4: Write the Python Script to Upload Videos
 
 Create a Python script named `upload_video.py` with the following content:
 
 ```python
+
+# 1. Import Libraries:
+
 import httplib2
 import os
 import random
@@ -73,6 +76,8 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
 
+# 2. Define Constants:
+
 httplib2.RETRIES = 1
 MAX_RETRIES = 10
 RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError)
@@ -85,6 +90,8 @@ YOUTUBE_API_VERSION = "v3"
 
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
+# 3. Authentication Function:
+
 def get_authenticated_service(args):
     flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE, scope=YOUTUBE_UPLOAD_SCOPE)
     storage = Storage(f"{sys.argv[0]}-oauth2.json")
@@ -94,6 +101,8 @@ def get_authenticated_service(args):
         credentials = run_flow(flow, storage, args)
 
     return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, http=credentials.authorize(httplib2.Http()))
+
+# 4. Video Upload Function:
 
 def initialize_upload(youtube, options):
     tags = options.keywords.split(",") if options.keywords else None
@@ -117,6 +126,8 @@ def initialize_upload(youtube, options):
     )
 
     resumable_upload(insert_request)
+
+# 5. Resumable Upload Logic:
 
 def resumable_upload(insert_request):
     response = None
@@ -146,6 +157,8 @@ def resumable_upload(insert_request):
         sleep_seconds = random.random() * max_sleep
         print(f"Sleeping {sleep_seconds} seconds and then retrying...")
         time.sleep(sleep_seconds)
+
+# 6. Main Script Execution:
 
 if __name__ == "__main__":
     argparser.add_argument("--file", required=True, help="Video file to upload")
